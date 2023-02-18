@@ -2,6 +2,7 @@ import type { AWS } from '@serverless/typescript';
 
 import getGroups from '@functions/getGroups';
 import createGroups from '@functions/createGroups';
+import getImages from '@functions/getImages';
 
 const serverlessConfiguration: AWS = {
   service: 'udagram-app',
@@ -17,7 +18,8 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
-      GROUPS_TABLE: "udagram-${self:provider.stage}"
+      GROUPS_TABLE: "udagram-${self:provider.stage}",
+      IMAGES_TABLE: "udagram-${self:provider.stage}-image",
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
@@ -39,7 +41,7 @@ const serverlessConfiguration: AWS = {
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups },
+  functions: { getGroups, createGroups, getImages },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -51,6 +53,35 @@ const serverlessConfiguration: AWS = {
           ValidateRequestParameters: false
         }
       },
+
+      ImagesDynamoDBTable: {
+        Type: "AWS::DynamoDB::Table",
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: "groupId",
+              AttributeType: "S"
+            },
+            {
+              AttributeName: "timestamp",
+              AttributeType: "S"
+            }
+          ],
+          KeySchema: [
+            {
+              AttributeName: "groupId",
+              KeyType: "HASH"
+            },
+            {
+              AttributeName: "timestamp",
+              KeyType: "RANGE"
+            }
+          ],
+          BillingMode: "PAY_PER_REQUEST",
+          TableName: "${self:provider.environment.IMAGES_TABLE}"
+        }
+      },
+
 
       GroupsDynamoDBTable: {
         Type: "AWS::DynamoDB::Table",
