@@ -12,16 +12,18 @@ const TableName = process.env.GROUPS_TABLE || "udagram-dev"
 
 
 const createGroups: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  // Your event is gotten from APIGateway. Its was sent to APIGateway either through POSTMAN or invoke by AWS lambda test.
+  // The content sent from either AWS Lambda test or postman varies
+  // postman sents `event: string` while lamda sends `event.body: object`
   console.log('Processing event:', event)
   //
   const itemId = uuidv4()
-  const { name, age, email } = JSON.parse(event.body); // this works for postman only
+  const { name, description } = JSON.parse(event.body); // this works for postman only
   // const parsedBody = event // this works for lambda portal test
   const Item = {
     id: { S: itemId },
     name: { S: name },
-    age: { N: age },
-    email: { S: email },
+    description: { S: description },
   }
 
   const params = {

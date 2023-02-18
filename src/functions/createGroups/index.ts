@@ -6,7 +6,17 @@ export default {
     {
       http: {
         method: 'post',
-        path: 'createGroups'
+        path: 'createGroups',
+        cors: true,
+        reqValidatorName: 'RequestBodyValidator', // validates only the event.body part recieved. Doesn't validate from lambda to db
+        // documentation: {
+        //   summary: 'Create a new group',
+        //   description: 'Create a new group',
+        //   requestModels: {
+        //     'application/json': 'GroupRequest'
+        //   }
+        // }
+
       },
     },
   ],

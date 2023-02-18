@@ -42,6 +42,16 @@ const serverlessConfiguration: AWS = {
   functions: { getGroups, createGroups },
   resources: {
     Resources: {
+      RequestBodyValidator: {
+        Type: 'AWS::ApiGateway::RequestValidator',
+        Properties: {
+          Name: 'request-body-validator',
+          RestApiId: { Ref: 'ApiGatewayRestApi' },
+          ValidateRequestBody: true,
+          ValidateRequestParameters: false
+        }
+      },
+
       GroupsDynamoDBTable: {
         Type: "AWS::DynamoDB::Table",
         Properties: {
@@ -91,11 +101,6 @@ const serverlessConfiguration: AWS = {
           name: "GroupRequest",
           contentType: "application/json",
           schema: "${file(models/create-group-request.json)}"
-        },
-        {
-          name: "ImageRequest",
-          contentType: "application/json",
-          schema: "${file(models/create-image-request.json)}"
         }
       ]
     }
