@@ -3,8 +3,8 @@
 // import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
-const { DynamoDB } = require("@aws-sdk/client-dynamodb");
-const docClient = new DynamoDB({ region: "us-east-1" });
+const { DynamoDBClient, GetItemCommand, QueryCommand } = require("@aws-sdk/client-dynamodb");
+const docClient = new DynamoDBClient({ region: "us-east-1" });
 
 const groupsTable = process.env.GROUPS_TABLE || "udagram-dev"
 const imagesTable = process.env.IMAGES_TABLE || "udagram-dev-image"
@@ -14,8 +14,10 @@ const getImages: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): P
   console.log('Processing event:', event)
 
   const groupId = event.pathParameters.groupId;
+  console.log("groupId from getImages:", groupId);
+
   const validGroupId = await groupExist(groupId)
-  
+
   if (!validGroupId) {
     return {
       statusCode: 404,
@@ -41,30 +43,43 @@ const getImages: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): P
   }
 };
 
+
+
 async function groupExist(groupId: string) {
-  const result = await docClient.get({
+  const command = new GetItemCommand({
     TableName: groupsTable,
     Key: {
-      id: groupId
+      id: { S: groupId },
     }
   })
 
-  console.log("groupExist function returned:", result)
-  return !!result.Item
+  const result = await docClient.send(command);
+  console.log("if groupExistResult result", result);
+
+
+  return !!result.Item;
 }
 
+
 async function getImagesPerGroup(groupId: string) {
-  const result = await docClient.query({
+  const command = new QueryCommand({
     TableName: imagesTable,
     KeyConditionExpression: 'groupId = :groupId',
     ExpressionAttributeValues: {
-      ':groupId': groupId
+      ':groupId': { S: groupId },
     },
     ScanIndexForward: false
   })
 
-  console.log("getImagesPerGroup function returned:", result)
-  return result.Items
+  try {
+    const result = await docClient.send(command);
+    console.log("getImagesPerGroup function returned:", result)
+    return result.Items
+
+  } catch (error) {
+    console.error(error);
+  }
+
 }
 
 export const main = middyfy(getImages);

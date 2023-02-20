@@ -3,11 +3,16 @@ import type { AWS } from '@serverless/typescript';
 import getGroups from '@functions/getGroups';
 import createGroups from '@functions/createGroups';
 import getImages from '@functions/getImages';
+import getAnImage from '@functions/getAnImage';
+import createImages from '@functions/createImages';
+
+
 
 const serverlessConfiguration: AWS = {
   service: 'udagram-app',
   frameworkVersion: '3',
   plugins: ['serverless-esbuild', "serverless-reqvalidator-plugin", "serverless-aws-documentation"],
+
   provider: {
     name: 'aws',
     runtime: 'nodejs14.x',
@@ -20,6 +25,7 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       GROUPS_TABLE: "udagram-${self:provider.stage}",
       IMAGES_TABLE: "udagram-${self:provider.stage}-image",
+      IMAGE_ID_INDEX: "ImageIdIndex",
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
@@ -30,18 +36,39 @@ const serverlessConfiguration: AWS = {
         Action: [
           "dynamodb:Scan",
           "dynamodb:PutItem",
-          "dynamodb:DescribeTable",
-          "dynamodb:Query",
           "dynamodb:GetItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
+          // "dynamodb:DescribeTable",
+          // "dynamodb:Query",
+          // "dynamodb:UpdateItem",
+          // "dynamodb:DeleteItem",
         ],
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}"
-      }
+      },
+      
+      {
+        Effect: "Allow",
+        Action: [
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:GetItem",
+        ],
+        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}"
+      },
+
+      {
+        Effect: "Allow",
+        Action: [
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:GetItem",
+        ],
+        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
+      },
+
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -65,7 +92,11 @@ const serverlessConfiguration: AWS = {
             {
               AttributeName: "timestamp",
               AttributeType: "S"
-            }
+            },
+            {
+              AttributeName: "imageId",
+              AttributeType: "S"
+            },
           ],
           KeySchema: [
             {
@@ -78,7 +109,23 @@ const serverlessConfiguration: AWS = {
             }
           ],
           BillingMode: "PAY_PER_REQUEST",
-          TableName: "${self:provider.environment.IMAGES_TABLE}"
+          TableName: "${self:provider.environment.IMAGES_TABLE}",
+
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: { "Fn::Sub": "${self:provider.environment.IMAGE_ID_INDEX}" },
+              KeySchema: [
+                {
+                  AttributeName: "imageId",
+                  KeyType: "HASH"
+                }
+              ],
+              Projection: {
+                ProjectionType: "ALL"
+              }
+            }
+          ],
+
         }
       },
 
@@ -132,7 +179,12 @@ const serverlessConfiguration: AWS = {
           name: "GroupRequest",
           contentType: "application/json",
           schema: "${file(models/create-group-request.json)}"
-        }
+        },
+        {
+          name: "ImageRequest",
+          contentType: "application/json",
+          schema: "${file(models/create-image-request.json)}"
+        },
       ]
     }
 

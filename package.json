@@ -13,6 +13,7 @@
     "@aws-sdk/client-dynamodb": "^3.271.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
+    "source-map-support": "^0.5.21",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
