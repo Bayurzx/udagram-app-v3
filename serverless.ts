@@ -26,6 +26,8 @@ const serverlessConfiguration: AWS = {
       GROUPS_TABLE: "udagram-${self:provider.stage}",
       IMAGES_TABLE: "udagram-${self:provider.stage}-image",
       IMAGE_ID_INDEX: "ImageIdIndex",
+      IMAGES_S3_BUCKET: "serverless-udagram-s3",
+      SIGNED_URL_EXP: '300',
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
@@ -64,6 +66,16 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
       },
+
+      {
+        Effect: 'Allow',
+        Action: [
+          's3:PutObject',
+          's3:GetObject'
+        ],
+        Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+
+      }
 
     ]
   },
@@ -148,7 +160,57 @@ const serverlessConfiguration: AWS = {
           BillingMode: "PAY_PER_REQUEST",
           TableName: "${self:provider.environment.GROUPS_TABLE}"
         }
+      },
+
+      AttachmentsBucket: {
+        Type: 'AWS::S3::Bucket',
+        // DependsOn: ['SNSTopicPolicy'],
+        Properties: {
+          BucketName: '${self:provider.environment.IMAGES_S3_BUCKET}',
+          // NotificationConfiguration: {
+          //   TopicConfigurations: [
+          //     {
+          //       Event: 's3:ObjectCreated:Put',
+          //       Topic: { Ref: 'ImagesTopic' }
+          //     }
+          //   ]
+          // },
+          CorsConfiguration: {
+            CorsRules: [
+              {
+                AllowedOrigins: ['*'],
+                AllowedHeaders: ['*'],
+                AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
+                MaxAge: 3000
+              }
+            ]
+          }
+        }
+      },
+
+      BucketPolicy: {
+        Type: 'AWS::S3::BucketPolicy',
+        Properties: {
+          PolicyDocument: {
+            Id: 'MyPolicy',
+            Version: '2012-10-17',
+            Statement: [
+              {
+                Sid: 'PublicReadForGetBucketObjects',
+                Effect: 'Allow',
+                Principal: '*',
+                Action: 's3:GetObject',
+                Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+              }
+            ]
+          },
+          Bucket: { 'Ref': 'AttachmentsBucket' }
+        }
       }
+
+
+
+
 
     }
   },
