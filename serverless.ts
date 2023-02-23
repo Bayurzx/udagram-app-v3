@@ -6,12 +6,8 @@ import getImages from '@functions/getImages';
 import getAnImage from '@functions/getAnImage';
 import createImages from '@functions/createImages';
 import SendUploadNotifications from '@functions/sendUploadNotifications';
-<<<<<<< HEAD
-
-=======
 import wss_connect from '@functions/wss_connect';
 import wss_disconnect from '@functions/wss_disconnect';
->>>>>>> main
 
 
 
@@ -92,27 +88,11 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
       },
-<<<<<<< HEAD
-      {
-        Effect: 'Allow',
-        Action: [
-          'dynamodb:Scan',
-          'dynamodb:PutItem',
-          'dynamodb:DeleteItem'
-        ],
-        Resource: 'arn:aws:dynamodb:${self.provider.region}:*:table/${self.provider.environment.CONNECTIONS_TABLE}'
-      }
-=======
->>>>>>> main
 
     ]
   },
   // import the function via paths
-<<<<<<< HEAD
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications },
-=======
   functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect },
->>>>>>> main
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -250,11 +230,7 @@ const serverlessConfiguration: AWS = {
       SendUploadNotificationsPermission: {
         Type: 'AWS::Lambda::Permission',
         Properties: {
-<<<<<<< HEAD
-          FunctionName: { 'Fn::GetAtt': ['SendUploadNotificationsLambdaFunction', 'Arn'] },
-=======
           FunctionName: { 'Ref': 'SendUploadNotificationsLambdaFunction' },
->>>>>>> main
           Principal: 's3.amazonaws.com',
           Action: 'lambda:InvokeFunction',
           SourceAccount: { 'Ref': 'AWS::AccountId' },
