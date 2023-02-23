@@ -6,7 +6,8 @@ import getImages from '@functions/getImages';
 import getAnImage from '@functions/getAnImage';
 import createImages from '@functions/createImages';
 import SendUploadNotifications from '@functions/sendUploadNotifications';
-
+import wss_connect from '@functions/wss_connect';
+import wss_disconnect from '@functions/wss_disconnect';
 
 
 
@@ -91,7 +92,7 @@ const serverlessConfiguration: AWS = {
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -170,6 +171,26 @@ const serverlessConfiguration: AWS = {
           ],
           BillingMode: "PAY_PER_REQUEST",
           TableName: "${self:provider.environment.GROUPS_TABLE}"
+        }
+      },
+      
+      WebSocketConnectionsDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'id',
+              AttributeType: 'S'
+            }
+          ],
+          KeySchema: [
+            {
+              AttributeName: 'id',
+              KeyType: 'HASH'
+            }
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: '${self:provider.environment.CONNECTIONS_TABLE}'
         }
       },
 
