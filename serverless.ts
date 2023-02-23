@@ -5,6 +5,8 @@ import createGroups from '@functions/createGroups';
 import getImages from '@functions/getImages';
 import getAnImage from '@functions/getAnImage';
 import createImages from '@functions/createImages';
+import SendUploadNotifications from '@functions/sendUploadNotifications';
+
 
 
 
@@ -28,6 +30,7 @@ const serverlessConfiguration: AWS = {
       IMAGE_ID_INDEX: "ImageIdIndex",
       IMAGES_S3_BUCKET: "serverless-udagram-s3",
       SIGNED_URL_EXP: '300',
+      CONNECTIONS_TABLE: 'Connections-${self:provider.stage}',
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
@@ -46,7 +49,7 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}"
       },
-      
+
       {
         Effect: "Allow",
         Action: [
@@ -66,6 +69,15 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
       },
+      {
+        Effect: 'Allow',
+        Action: [
+          'dynamodb:Scan',
+          'dynamodb:PutItem',
+          'dynamodb:DeleteItem'
+        ],
+        Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
+      },
 
       {
         Effect: 'Allow',
@@ -74,13 +86,12 @@ const serverlessConfiguration: AWS = {
           's3:GetObject'
         ],
         Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
-
-      }
+      },
 
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -175,6 +186,13 @@ const serverlessConfiguration: AWS = {
           //     }
           //   ]
           // },
+          NotificationConfiguration: {
+            LambdaConfigurations: [{
+              Event: 's3:ObjectCreated:*',
+              Function: { 'Fn::GetAtt': ['SendUploadNotificationsLambdaFunction', 'Arn'] } // to get ARN string from cloudformation
+            }]
+          },
+
           CorsConfiguration: {
             CorsRules: [
               {
@@ -187,6 +205,18 @@ const serverlessConfiguration: AWS = {
           }
         }
       },
+
+      SendUploadNotificationsPermission: {
+        Type: 'AWS::Lambda::Permission',
+        Properties: {
+          FunctionName: { 'Ref': 'SendUploadNotificationsLambdaFunction' },
+          Principal: 's3.amazonaws.com',
+          Action: 'lambda:InvokeFunction',
+          SourceAccount: { 'Ref': 'AWS::AccountId' },
+          SourceArn: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}'
+        }
+      },
+
 
       BucketPolicy: {
         Type: 'AWS::S3::BucketPolicy',
@@ -215,7 +245,7 @@ const serverlessConfiguration: AWS = {
     }
   },
   package: { individually: true },
-  
+
   custom: {
     esbuild: {
       bundle: true,
@@ -227,7 +257,7 @@ const serverlessConfiguration: AWS = {
       platform: 'node',
       concurrency: 10,
     },
-    
+
     documentation: {
       api: {
         info: {
