@@ -6,7 +6,12 @@ import getImages from '@functions/getImages';
 import getAnImage from '@functions/getAnImage';
 import createImages from '@functions/createImages';
 import SendUploadNotifications from '@functions/sendUploadNotifications';
+<<<<<<< HEAD
 
+=======
+import wss_connect from '@functions/wss_connect';
+import wss_disconnect from '@functions/wss_disconnect';
+>>>>>>> main
 
 
 
@@ -69,6 +74,15 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
       },
+      {
+        Effect: 'Allow',
+        Action: [
+          'dynamodb:Scan',
+          'dynamodb:PutItem',
+          'dynamodb:DeleteItem'
+        ],
+        Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
+      },
 
       {
         Effect: 'Allow',
@@ -78,6 +92,7 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
       },
+<<<<<<< HEAD
       {
         Effect: 'Allow',
         Action: [
@@ -87,11 +102,17 @@ const serverlessConfiguration: AWS = {
         ],
         Resource: 'arn:aws:dynamodb:${self.provider.region}:*:table/${self.provider.environment.CONNECTIONS_TABLE}'
       }
+=======
+>>>>>>> main
 
     ]
   },
   // import the function via paths
+<<<<<<< HEAD
   functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications },
+=======
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect },
+>>>>>>> main
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -172,6 +193,26 @@ const serverlessConfiguration: AWS = {
           TableName: "${self:provider.environment.GROUPS_TABLE}"
         }
       },
+      
+      WebSocketConnectionsDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            {
+              AttributeName: 'id',
+              AttributeType: 'S'
+            }
+          ],
+          KeySchema: [
+            {
+              AttributeName: 'id',
+              KeyType: 'HASH'
+            }
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: '${self:provider.environment.CONNECTIONS_TABLE}'
+        }
+      },
 
       AttachmentsBucket: {
         Type: 'AWS::S3::Bucket',
@@ -209,7 +250,11 @@ const serverlessConfiguration: AWS = {
       SendUploadNotificationsPermission: {
         Type: 'AWS::Lambda::Permission',
         Properties: {
+<<<<<<< HEAD
           FunctionName: { 'Fn::GetAtt': ['SendUploadNotificationsLambdaFunction', 'Arn'] },
+=======
+          FunctionName: { 'Ref': 'SendUploadNotificationsLambdaFunction' },
+>>>>>>> main
           Principal: 's3.amazonaws.com',
           Action: 'lambda:InvokeFunction',
           SourceAccount: { 'Ref': 'AWS::AccountId' },
