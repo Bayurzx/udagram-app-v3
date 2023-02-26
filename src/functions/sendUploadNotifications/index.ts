@@ -2,12 +2,13 @@ import { handlerPath } from '@libs/handler-resolver';
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
-  // environment: {
-  //   STAGE: "${self:provider.stage}",
-  //   API_ID: {
-  //     Ref: "WebsocketsApi"
-  //   }
-  // },
+  // env var local to sendUploadNotifications 
+  environment: {
+    STAGE: "${self:provider.stage}",
+    API_ID: {
+      Ref: "WebsocketsApi"
+    }
+  },
   // events: [
   //   {
   //     sns: {
