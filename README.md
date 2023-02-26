@@ -13,12 +13,12 @@ Depending on your preferred package manager, follow the instructions below to de
 ### Using NPM
 
 - Run `npm i` to install the project dependencies
-- Run `npx sls deploy` to deploy this stack to AWS
+- Run `npx serverless deploy --verbose` to deploy this stack to AWS
 
 ### Using Yarn
 
 - Run `yarn` to install the project dependencies
-- Run `yarn sls deploy` to deploy this stack to AWS
+- Run `yarn serverless deploy` to deploy this stack to AWS
 
 ## Test your service
 
@@ -34,10 +34,10 @@ This template contains a single lambda function triggered by an HTTP request mad
 
 In order to test the hello function locally, run the following command:
 
-- `npx sls invoke local -f hello --path src/functions/hello/mock.json` if you're using NPM
-- `yarn sls invoke local -f hello --path src/functions/hello/mock.json` if you're using Yarn
+- `npx serverless invoke local -f hello --path src/functions/hello/mock.json` if you're using NPM
+- `yarn serverless invoke local -f hello --path src/functions/hello/mock.json` if you're using Yarn
 
-Check the [sls invoke local command documentation](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local/) for more information.
+Check the [serverless invoke local command documentation](https://www.serverless.com/framework/docs/providers/aws/cli-reference/invoke-local/) for more information.
 
 ### Remotely
 
@@ -62,26 +62,48 @@ The project code base is mainly located within the `src` folder. This folder is 
 
 ```
 .
-├── src
-│   ├── functions               # Lambda configuration and source code folder
-│   │   ├── hello
-│   │   │   ├── handler.ts      # `Hello` lambda source code
-│   │   │   ├── index.ts        # `Hello` lambda Serverless configuration
-│   │   │   ├── mock.json       # `Hello` lambda input parameter, if any, for local invocation
-│   │   │   └── schema.ts       # `Hello` lambda input event JSON-Schema
-│   │   │
-│   │   └── index.ts            # Import/export of all lambda configurations
-│   │
-│   └── libs                    # Lambda shared code
-│       └── apiGateway.ts       # API Gateway specific helpers
-│       └── handlerResolver.ts  # Sharable library for resolving lambda handlers
-│       └── lambda.ts           # Lambda middleware
-│
+├── README.md
+├── models
+│   ├── create-group-request.json
+│   └── create-image-request.json
+├── package-lock.json
 ├── package.json
-├── serverless.ts               # Serverless service file
-├── tsconfig.json               # Typescript compiler configuration
-├── tsconfig.paths.json         # Typescript paths
-└── webpack.config.js           # Webpack configuration
+├── serverless.ts
+├── src
+│   ├── functions
+│   │   ├── createGroups
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   ├── createImages
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   ├── getAnImage
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   ├── getGroups
+│   │   │   ├── handler.ts
+│   │   │   ├── index.ts
+│   │   │   ├── mock.json
+│   │   │   └── schema.ts
+│   │   ├── getImages
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   ├── sendUploadNotifications
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   ├── wss_connect
+│   │   │   ├── handler.ts
+│   │   │   └── index.ts
+│   │   └── wss_disconnect
+│   │       ├── handler.ts
+│   │       └── index.ts
+│   └── libs
+│       ├── api-gateway.ts
+│       ├── handler-resolver.ts
+│       └── lambda.ts
+├── tsconfig.json
+└── tsconfig.paths.json
 ```
 
 ### 3rd party libraries
