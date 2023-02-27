@@ -8,7 +8,7 @@ import createImages from '@functions/createImages';
 import SendUploadNotifications from '@functions/sendUploadNotifications';
 import wss_connect from '@functions/wss_connect';
 import wss_disconnect from '@functions/wss_disconnect';
-
+import elasticSearchSync from '@functions/elasticSearchSync';
 
 
 const serverlessConfiguration: AWS = {
@@ -92,7 +92,7 @@ const serverlessConfiguration: AWS = {
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -133,6 +133,11 @@ const serverlessConfiguration: AWS = {
             }
           ],
           BillingMode: "PAY_PER_REQUEST",
+
+          StreamSpecification: {
+            StreamViewType: "NEW_IMAGE"
+          },
+
           TableName: "${self:provider.environment.IMAGES_TABLE}",
 
           GlobalSecondaryIndexes: [
