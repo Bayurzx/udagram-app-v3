@@ -15,14 +15,17 @@
     "@aws-sdk/client-s3": "^3.272.0",
     "@aws-sdk/s3-request-presigner": "^3.272.0",
     "@aws-sdk/util-dynamodb": "^3.276.0",
+    "@elastic/elasticsearch": "^8.6.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
+    "http-aws-es": "^6.0.0",
     "source-map-support": "^0.5.21",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",
     "@types/aws-lambda": "^8.10.71",
+    "@types/elasticsearch": "^5.0.40",
     "@types/node": "^14.14.25",
     "esbuild": "^0.14.11",
     "json-schema-to-ts": "^1.5.0",

@@ -2,9 +2,9 @@ import { handlerPath } from '@libs/handler-resolver';
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
-  // environment: {
-  //   ES_ENDPOINT: '${self:custom.esEndpoint}',
-  // },
+  environment: {
+    ES_ENDPOINT: { "Fn::GetAtt": ["ImagesSearch", "DomainEndpoint"] }
+  },
   events: [
     {
       stream: {
