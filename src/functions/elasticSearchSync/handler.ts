@@ -26,7 +26,7 @@ const elasticSearchSync: DynamoDBStreamHandler = async (event: DynamoDBStreamEve
 
     const newItem = record.dynamodb?.NewImage
     if (!newItem) {
-      console.log('No NewImage found in record');
+      console.log('No NewImage found in record!');
       continue;
     }
 

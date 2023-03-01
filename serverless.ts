@@ -9,6 +9,7 @@ import SendUploadNotifications from '@functions/sendUploadNotifications';
 import wss_connect from '@functions/wss_connect';
 import wss_disconnect from '@functions/wss_disconnect';
 import elasticSearchSync from '@functions/elasticSearchSync';
+import resizeImage from '@functions/resizeImage';
 
 
 const serverlessConfiguration: AWS = {
@@ -32,6 +33,8 @@ const serverlessConfiguration: AWS = {
       IMAGES_S3_BUCKET: "serverless-udagram-s3",
       SIGNED_URL_EXP: '300',
       CONNECTIONS_TABLE: 'Connections-${self:provider.stage}',
+      THUMBNAILS_S3_BUCKET: 'serverless-udagram-${self:provider.stage}-thumbnail',
+
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
@@ -89,10 +92,19 @@ const serverlessConfiguration: AWS = {
         Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
       },
 
+      {
+        Effect: 'Allow',
+        Action: [
+          's3:PutObject',
+          's3:GetObject'
+        ],
+        Resource: 'arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*'
+      },
+
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -201,23 +213,23 @@ const serverlessConfiguration: AWS = {
 
       AttachmentsBucket: {
         Type: 'AWS::S3::Bucket',
-        // DependsOn: ['SNSTopicPolicy'],
+        DependsOn: ['SNSTopicPolicy'],
         Properties: {
           BucketName: '${self:provider.environment.IMAGES_S3_BUCKET}',
-          // NotificationConfiguration: {
-          //   TopicConfigurations: [
-          //     {
-          //       Event: 's3:ObjectCreated:Put',
-          //       Topic: { Ref: 'ImagesTopic' }
-          //     }
-          //   ]
-          // },
           NotificationConfiguration: {
-            LambdaConfigurations: [{
-              Event: 's3:ObjectCreated:*',
-              Function: { 'Fn::GetAtt': ['SendUploadNotificationsLambdaFunction', 'Arn'] } // to get ARN string from cloudformation
-            }]
+            TopicConfigurations: [
+              {
+                Event: 's3:ObjectCreated:Put',
+                Topic: { Ref: 'ImagesTopic' }
+              }
+            ]
           },
+          // NotificationConfiguration: {
+          //   LambdaConfigurations: [{
+          //     Event: 's3:ObjectCreated:*',
+          //     Function: { 'Fn::GetAtt': ['SendUploadNotificationsLambdaFunction', 'Arn'] } // to get ARN string from cloudformation
+          //   }]
+          // },
 
           CorsConfiguration: {
             CorsRules: [
@@ -303,6 +315,50 @@ const serverlessConfiguration: AWS = {
         }
       },
 
+      ThumbnailsBucket: {
+        Type: "AWS::S3::Bucket",
+        Properties: {
+          BucketName: "${self:provider.environment.THUMBNAILS_S3_BUCKET}"
+        }
+      },
+
+
+      ImagesTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          DisplayName: "Image bucket topic",
+          // TopicName: { "Fn::GetAtt": ["CustomSettings", "topicName"] },
+          TopicName: "${self:custom.topicName}"
+        }
+      },
+
+      SNSTopicPolicy: {
+        Type: "AWS::SNS::TopicPolicy",
+        Properties: {
+          PolicyDocument: {
+            Version: "2012-10-17",
+            Statement: [
+              {
+                Effect: "Allow",
+                Principal: {
+                  AWS: "*"
+                },
+                Action: "sns:Publish",
+                Resource: { Ref: "ImagesTopic" },
+                Condition: {
+                  ArnLike: {
+                    "AWS:SourceArn": "arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}"
+                  }
+                }
+              }
+            ]
+          },
+          Topics: [{ Ref: "ImagesTopic" }]
+        }
+      },
+
+
+
 
 
 
@@ -312,6 +368,8 @@ const serverlessConfiguration: AWS = {
   package: { individually: true },
 
   custom: {
+    topicName: "imagesTopic-${self:provider.stage}",
+
     esbuild: {
       bundle: true,
       minify: false,

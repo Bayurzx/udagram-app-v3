@@ -19,6 +19,7 @@
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
     "http-aws-es": "^6.0.0",
+    "jimp": "^0.22.7",
     "source-map-support": "^0.5.21",
     "uuid": "^9.0.0"
   },
