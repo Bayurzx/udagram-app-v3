@@ -10,6 +10,7 @@ import wss_connect from '@functions/wss_connect';
 import wss_disconnect from '@functions/wss_disconnect';
 import elasticSearchSync from '@functions/elasticSearchSync';
 import resizeImage from '@functions/resizeImage';
+import auth0Authorizer from '@functions/auth0Authorizer';
 
 
 const serverlessConfiguration: AWS = {
@@ -104,7 +105,7 @@ const serverlessConfiguration: AWS = {
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage, auth0Authorizer },
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -356,6 +357,21 @@ const serverlessConfiguration: AWS = {
           Topics: [{ Ref: "ImagesTopic" }]
         }
       },
+      
+      GatewayResponseDefault4XX: {
+        Type: "AWS::ApiGateway::GatewayResponse",
+        Properties: {
+          ResponseParameters: {
+            "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+            "gatewayresponse.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+            "gatewayresponse.header.Access-Control-Allow-Methods": "'GET,OPTIONS,POST'"
+          },
+          ResponseType: "DEFAULT_4XX",
+          RestApiId: {
+            Ref: "ApiGatewayRestApi"
+          }
+        }
+      }
 
 
 

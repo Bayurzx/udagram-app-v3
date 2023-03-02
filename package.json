@@ -18,12 +18,15 @@
     "@elastic/elasticsearch": "^8.6.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
+    "@middy/secrets-manager": "^4.2.6",
     "http-aws-es": "^6.0.0",
     "jimp": "^0.22.7",
+    "jsonwebtoken": "^9.0.0",
     "source-map-support": "^0.5.21",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.282.0",
     "@serverless/typescript": "^3.0.0",
     "@types/aws-lambda": "^8.10.71",
     "@types/elasticsearch": "^5.0.40",
