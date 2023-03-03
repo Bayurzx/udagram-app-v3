@@ -1,16 +1,15 @@
-import { middyfy } from '@libs/lambda';
-import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult } from 'aws-lambda'
+import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-import secretsManager from '@middy/secrets-manager'
+import * as middy from 'middy'
+import { secretsManager } from 'middy/middlewares'
 
 import { verify } from 'jsonwebtoken'
 import { JwtToken } from '../../auth/JwtToken'
 
-
 const secretId = process.env.AUTH_0_SECRET_ID
 const secretField = process.env.AUTH_0_SECRET_FIELD
 
-const auth0Authorizer = async (event: APIGatewayTokenAuthorizerEvent, context): Promise<APIGatewayAuthorizerResult> => {
+export const handler = middy(async (event: CustomAuthorizerEvent, context): Promise<CustomAuthorizerResult> => {
   try {
     const decodedToken = verifyToken(
       event.authorizationToken,
@@ -48,9 +47,9 @@ const auth0Authorizer = async (event: APIGatewayTokenAuthorizerEvent, context): 
       }
     }
   }
-}
+})
 
-const verifyToken = (authHeader: string, secret: string): JwtToken => {
+function verifyToken(authHeader: string, secret: string): JwtToken {
   if (!authHeader)
     throw new Error('No authentication header')
 
@@ -60,18 +59,20 @@ const verifyToken = (authHeader: string, secret: string): JwtToken => {
   const split = authHeader.split(' ')
   const token = split[1]
 
+  if (token !== '123')
+    throw new Error("Invalid Token")
   return verify(token, secret) as JwtToken
 }
 
-
-export const main = middyfy(auth0Authorizer).use(
+export const main = handler.use(
   secretsManager({
-    fetchData: {
-      apiToken: secretId
-    },
-    awsClientOptions: {
-      region: 'us-east-1'
-    },
-    setToContext: true
+    awsSdkOptions: { region: 'us-east-1' },
+    cache: true,
+    cacheExpiryInMillis: 60000,
+    // Throw an error if can't read the secret
+    throwOnFailedCall: true,
+    secrets: {
+      AUTH0_SECRET: secretId
+    }
   })
-);
+)

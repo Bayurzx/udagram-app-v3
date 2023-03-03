@@ -35,6 +35,8 @@ const serverlessConfiguration: AWS = {
       SIGNED_URL_EXP: '300',
       CONNECTIONS_TABLE: 'Connections-${self:provider.stage}',
       THUMBNAILS_S3_BUCKET: 'serverless-udagram-${self:provider.stage}-thumbnail',
+      AUTH_0_SECRET_ID: 'Auth0Secret-${self:provider.stage}',
+      AUTH_0_SECRET_FIELD: 'auth0Secret',
 
     },
     stage: "${opt:stage, 'dev'}",
@@ -357,7 +359,7 @@ const serverlessConfiguration: AWS = {
           Topics: [{ Ref: "ImagesTopic" }]
         }
       },
-      
+
       GatewayResponseDefault4XX: {
         Type: "AWS::ApiGateway::GatewayResponse",
         Properties: {
