@@ -1,8 +1,9 @@
 import { middyfy } from '@libs/lambda';
-import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult } from 'aws-lambda'
+import { APIGatewayAuthorizerHandler, APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-import secretsManager from '@middy/secrets-manager'
+// import secretsManager from '@middy/secrets-manager'
 
+import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 import { verify } from 'jsonwebtoken'
 import { JwtToken } from '../../auth/JwtToken'
 
@@ -10,14 +11,17 @@ import { JwtToken } from '../../auth/JwtToken'
 const secretId = process.env.AUTH_0_SECRET_ID
 const secretField = process.env.AUTH_0_SECRET_FIELD
 
-const auth0Authorizer = async (event: APIGatewayTokenAuthorizerEvent, context): Promise<APIGatewayAuthorizerResult> => {
-  try {
-    const decodedToken = verifyToken(
-      event.authorizationToken,
-      context.AUTH0_SECRET[secretField]
-    )
-    console.log('User was authorized', decodedToken)
+// Cache secret if a Lambda instance is reused
+let cachedSecret: string;
 
+const client = new SecretsManagerClient({ region: 'us-east-1' });
+
+const auth0Authorizer: APIGatewayAuthorizerHandler = async (event: APIGatewayTokenAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
+  console.log("event.authorizationToken", event.authorizationToken);
+  
+  try {
+    const decodedToken = await verifyToken(event.authorizationToken);
+    console.log('User was authorized', decodedToken);
     return {
       principalId: decodedToken.sub,
       policyDocument: {
@@ -50,28 +54,49 @@ const auth0Authorizer = async (event: APIGatewayTokenAuthorizerEvent, context): 
   }
 }
 
-const verifyToken = (authHeader: string, secret: string): JwtToken => {
-  if (!authHeader)
-    throw new Error('No authentication header')
+async function verifyToken(authHeader: string): Promise<JwtToken> {
+  if (!authHeader) {
+    throw new Error('No authentication header');
+  }
 
-  if (!authHeader.toLowerCase().startsWith('bearer '))
-    throw new Error('Invalid authentication header')
+  if (!authHeader.toLowerCase().startsWith('bearer ')) {
+    throw new Error('Invalid authentication header');
+  }
 
-  const split = authHeader.split(' ')
-  const token = split[1]
+  const token = authHeader.split(' ')[1];
+  console.log('token', token);
+  
 
-  return verify(token, secret) as JwtToken
+  if (token === undefined) {
+    throw new Error('No token provided');
+  }
+
+  const secret = await getSecret();
+  const secrets = JSON.parse(secret)[secretField] 
+  console.log("secrets", secrets);
+  
+
+  return verify(token, secrets) as JwtToken;
 }
 
 
-export const main = middyfy(auth0Authorizer).use(
-  secretsManager({
-    fetchData: {
-      apiToken: secretId
-    },
-    awsClientOptions: {
-      region: 'us-east-1'
-    },
-    setToContext: true
-  })
-);
+async function getSecret(): Promise<string> {
+  if (cachedSecret) {
+    return cachedSecret;
+  }
+
+  const response = await client.send(new GetSecretValueCommand({
+    SecretId: secretId
+  }));
+
+  if ('SecretString' in response && response.SecretString) {
+    cachedSecret = response.SecretString;
+    console.log("cachedSecret is", typeof cachedSecret, cachedSecret);
+    
+    return cachedSecret;
+  } else {
+    throw new Error('Failed to retrieve secret');
+  }
+}
+
+export const main = middyfy(auth0Authorizer)
