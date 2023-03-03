@@ -104,6 +104,20 @@ const serverlessConfiguration: AWS = {
         Resource: 'arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*'
       },
 
+      {
+        Effect: 'Allow',
+        Action: ['secretsmanager:GetSecretValue'],
+        Resource: { Ref: 'Auth0Secret' },
+      },
+      {
+        Effect: 'Allow',
+        Action: ['kms:Decrypt'],
+        Resource: { 'Fn::GetAtt': ['KMSKey', 'Arn'] }
+      }
+
+
+
+
     ]
   },
   // import the function via paths
@@ -373,7 +387,57 @@ const serverlessConfiguration: AWS = {
             Ref: "ApiGatewayRestApi"
           }
         }
+      },
+
+      KMSKey: {
+        Type: 'AWS::KMS::Key',
+        Properties: {
+          Description: 'KMS key to encrypt Auth0 secret',
+          KeyPolicy: {
+            Version: '2012-10-17',
+            Id: 'key-default-1',
+            Statement: [
+              {
+                Sid: 'Allow administration of the key',
+                Effect: 'Allow',
+                Principal: {
+                  AWS: {
+                    'Fn::Join': [
+                      ':',
+                      [
+                        'arn:aws:iam:',
+                        { Ref: 'AWS::AccountId' },
+                        'root'
+                      ]
+                    ]
+                  }
+                },
+                Action: [
+                  'kms:*'
+                ],
+                Resource: '*'
+              }
+            ]
+          }
+        }
+      },
+
+      KMSKeyAlias: {
+        Type: 'AWS::KMS::Alias',
+        Properties: {
+          AliasName: 'alias/auth0Key-${self:provider.stage}',
+          TargetKeyId: { Ref: 'KMSKey' }
+        }
+      },
+      Auth0Secret: {
+        Type: 'AWS::SecretsManager::Secret',
+        Properties: {
+          Name: '${self:provider.environment.AUTH_0_SECRET_ID}',
+          Description: 'Auth0 secret',
+          KmsKeyId: { Ref: 'KMSKey' }
+        }
       }
+
 
 
 

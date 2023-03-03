@@ -6,4 +6,5 @@ jspm_packages
 .serverless
 
 # esbuild directories
-.esbuild
+.esbuild.secret
+.secret
