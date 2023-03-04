@@ -5,6 +5,8 @@ import { middyfy } from '@libs/lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import 'source-map-support/register'
+import { cors } from 'middy/middlewares'
+
 const { DynamoDBClient, GetItemCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -30,9 +32,9 @@ const createImage: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent):
   if (!validGroupId) {
     return {
       statusCode: 404,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
+      // headers: {
+      //   'Access-Control-Allow-Origin': '*',
+      // },
       body: JSON.stringify({
         error: "Group does not exist"
       })
@@ -49,9 +51,9 @@ const createImage: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent):
 
   return {
     statusCode: 201,
-    headers: {
-      'Access-Control-Allow-Origin': '*'
-    },
+    // headers: {
+    //   'Access-Control-Allow-Origin': '*'
+    // },
     body: JSON.stringify({
       newItem: newItem,
       uploadUrl: url
@@ -146,4 +148,4 @@ async function getUploadUrl(imageId: string) {
 }
 
 
-export const main = middyfy(createImage);
+export const main = middyfy(createImage)

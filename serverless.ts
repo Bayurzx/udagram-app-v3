@@ -11,6 +11,7 @@ import wss_disconnect from '@functions/wss_disconnect';
 import elasticSearchSync from '@functions/elasticSearchSync';
 import resizeImage from '@functions/resizeImage';
 import auth0Authorizer from '@functions/auth0Authorizer';
+import rs256Auth0Authorizer from '@functions/rs256Auth0Authorizer';
 
 
 const serverlessConfiguration: AWS = {
@@ -121,7 +122,7 @@ const serverlessConfiguration: AWS = {
     ]
   },
   // import the function via paths
-  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage, auth0Authorizer },
+  functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage, auth0Authorizer, rs256Auth0Authorizer },
   resources: {
     Resources: {
       RequestBodyValidator: {

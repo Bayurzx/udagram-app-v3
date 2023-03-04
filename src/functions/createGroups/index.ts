@@ -9,7 +9,7 @@ export default {
         path: 'createGroups',
         cors: true,
         reqValidatorName: 'RequestBodyValidator', // validates only the event.body part recieved. Doesn't validate from lambda to db
-        authorizer: 'auth0Authorizer'
+        authorizer: 'rs256Auth0Authorizer'
         
       },
     },

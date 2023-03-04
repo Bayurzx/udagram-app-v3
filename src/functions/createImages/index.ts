@@ -9,6 +9,7 @@ export default {
         path: 'createImage/{groupId}',
         cors: true,
         reqValidatorName: 'RequestBodyValidator', // validates only the event.body part recieved. Doesn't validate from lambda to db
+        authorizer: 'rs256Auth0Authorizer'
         // documentation: {
         //   summary: 'Create a new image',
         //   description: 'Create a new image',
