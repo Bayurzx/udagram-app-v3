@@ -5,7 +5,7 @@ import { middyfy } from '@libs/lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import 'source-map-support/register'
-import { cors } from 'middy/middlewares'
+// import { cors } from 'middy/middlewares'
 
 const { DynamoDBClient, GetItemCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
