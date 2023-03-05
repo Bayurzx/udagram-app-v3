@@ -14,4 +14,12 @@ export default {
       },
     },
   ],
+
+  deploymentSettings: {
+    type: 'Linear10PercentEvery1Minute',
+    alias: 'Live'
+  },
+
+
+
 };

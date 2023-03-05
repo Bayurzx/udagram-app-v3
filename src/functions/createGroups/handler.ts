@@ -25,6 +25,7 @@ const createGroups: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent)
     name: { S: name },
     description: { S: description },
     userId: { S: getUserId(jwtToken) },
+    timestamp: {S: new Date().toISOString()}
   }
 
   const params = {

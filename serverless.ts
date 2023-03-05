@@ -17,7 +17,7 @@ import rs256Auth0Authorizer from '@functions/rs256Auth0Authorizer';
 const serverlessConfiguration: AWS = {
   service: 'udagram-app',
   frameworkVersion: '3',
-  plugins: ['serverless-esbuild', "serverless-reqvalidator-plugin", "serverless-aws-documentation"],
+  plugins: ['serverless-esbuild', "serverless-reqvalidator-plugin", "serverless-aws-documentation", "serverless-plugin-canary-deployments"],
 
   provider: {
     name: 'aws',
@@ -119,7 +119,15 @@ const serverlessConfiguration: AWS = {
 
 
 
-    ]
+    ],
+
+    tracing: {
+      lambda: true,
+      apiGateway: true
+    }
+
+
+    
   },
   // import the function via paths
   functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage, auth0Authorizer, rs256Auth0Authorizer },
