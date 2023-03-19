@@ -16,6 +16,8 @@ const secretField = process.env.AUTH_0_SECRET_FIELD
 // const client = new SecretsManagerClient({ region: 'us-east-1' });
 
 const auth0Authorizer: APIGatewayAuthorizerHandler = async (event: APIGatewayTokenAuthorizerEvent, context:any): Promise<APIGatewayAuthorizerResult> => {
+  console.log("context", context);
+  
   console.log("event.authorizationToken", event.authorizationToken);
   
   try {

@@ -22,4 +22,21 @@ export default {
       },
     },
   ],
+
+  iamRoleStatements: [
+    {
+      Effect: "Allow",
+      Action: [
+        "dynamodb:PutItem"
+      ],
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}'
+    },
+    {
+      Effect: "Allow",
+      Action: [
+        "dynamodb:GetItem"
+      ],
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}'
+    }
+  ]
 };

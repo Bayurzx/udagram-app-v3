@@ -4,10 +4,11 @@ import { Group } from '../models/Group'
 import { GroupAccess } from '../dataLayer/groupsAccess'
 import { CreateGroupRequest } from '../requests/CreateGroupRequest'
 import { getUserId } from '../auth/utils'
+import { AttributeValue } from '@aws-sdk/client-dynamodb'
 
 const groupAccess = new GroupAccess()
 
-export async function getAllGroups(): Promise<Group[]> {
+export async function getAllGroups(): Promise<Record<string, AttributeValue>[]> {
   return groupAccess.getAllGroups()
 }
 

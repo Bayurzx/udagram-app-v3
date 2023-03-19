@@ -20,6 +20,24 @@ export default {
         topicName: "${self:custom.topicName}",
       },
     },
+  ],
+
+  iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: [
+        's3:PutObject',
+      ],
+      Resource: 'arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*'
+    },
+    {
+      Effect: 'Allow',
+      Action: [
+        's3:GetObject'
+      ],
+      Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+    },
+
   ]
 
 

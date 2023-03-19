@@ -8,6 +8,18 @@ export default {
         route: '$connect'
       }
     }
+  ],
+
+  iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: [
+        'dynamodb:PutItem',
+      ],
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
+    },
   ]
+
+
 
 };

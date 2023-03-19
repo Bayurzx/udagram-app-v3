@@ -17,7 +17,7 @@ import rs256Auth0Authorizer from '@functions/rs256Auth0Authorizer';
 const serverlessConfiguration: AWS = {
   service: 'udagram-app',
   frameworkVersion: '3',
-  plugins: ['serverless-esbuild', "serverless-reqvalidator-plugin", "serverless-aws-documentation", "serverless-plugin-canary-deployments"],
+  plugins: ['serverless-esbuild', "serverless-reqvalidator-plugin", "serverless-aws-documentation", "serverless-plugin-canary-deployments", "serverless-iam-roles-per-function"],
 
   provider: {
     name: 'aws',
@@ -38,72 +38,72 @@ const serverlessConfiguration: AWS = {
       THUMBNAILS_S3_BUCKET: 'serverless-udagram-${self:provider.stage}-thumbnail',
       AUTH_0_SECRET_ID: 'Auth0Secret-${self:provider.stage}',
       AUTH_0_SECRET_FIELD: 'auth0Secret',
-
+      AUTH0_DOMAIN: 'dev-24f04isi.us.auth0.com',
     },
     stage: "${opt:stage, 'dev'}",
     region: 'us-east-1',
 
     iamRoleStatements: [
-      {
-        Effect: "Allow",
-        Action: [
-          "dynamodb:Scan",
-          "dynamodb:PutItem",
-          "dynamodb:GetItem",
-          // "dynamodb:DescribeTable",
-          // "dynamodb:Query",
-          // "dynamodb:UpdateItem",
-          // "dynamodb:DeleteItem",
-        ],
-        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}"
-      },
+      // {
+      //   Effect: "Allow",
+      //   Action: [
+      //     "dynamodb:Scan",
+      //     "dynamodb:PutItem",
+      //     "dynamodb:GetItem",
+      //     // "dynamodb:DescribeTable",
+      //     // "dynamodb:Query",
+      //     // "dynamodb:UpdateItem",
+      //     // "dynamodb:DeleteItem",
+      //   ],
+      //   Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}"
+      // },
 
-      {
-        Effect: "Allow",
-        Action: [
-          "dynamodb:PutItem",
-          "dynamodb:Query",
-          "dynamodb:GetItem",
-        ],
-        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}"
-      },
+      // {
+      //   Effect: "Allow",
+      //   Action: [
+      //     "dynamodb:PutItem",
+      //     "dynamodb:Query",
+      //     "dynamodb:GetItem",
+      //   ],
+      //   Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}"
+      // },
 
-      {
-        Effect: "Allow",
-        Action: [
-          "dynamodb:PutItem",
-          "dynamodb:Query",
-          "dynamodb:GetItem",
-        ],
-        Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
-      },
-      {
-        Effect: 'Allow',
-        Action: [
-          'dynamodb:Scan',
-          'dynamodb:PutItem',
-          'dynamodb:DeleteItem'
-        ],
-        Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
-      },
+      // {
+      //   Effect: "Allow",
+      //   Action: [
+      //     "dynamodb:PutItem",
+      //     "dynamodb:Query",
+      //     "dynamodb:GetItem",
+      //   ],
+      //   Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}"
+      // },
+      // {
+      //   Effect: 'Allow',
+      //   Action: [
+      //     'dynamodb:Scan',
+      //     'dynamodb:PutItem',
+      //     'dynamodb:DeleteItem'
+      //   ],
+      //   Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
+      // },
 
-      {
-        Effect: 'Allow',
-        Action: [
-          's3:PutObject',
-          's3:GetObject'
-        ],
-        Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
-      },
+      // {
+      //   Effect: 'Allow',
+      //   Action: [
+      //     's3:PutObject',
+      //     's3:GetObject'
+      //   ],
+      //   Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+      // },
 
-      {
-        Effect: 'Allow',
-        Action: [
-          's3:PutObject',
-          's3:GetObject'
-        ],
-        Resource: 'arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*'
-      },
+      // {
+      //   Effect: 'Allow',
+      //   Action: [
+      //     's3:PutObject',
+      //     's3:GetObject'
+      //   ],
+      //   Resource: 'arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*'
+      // },
 
       {
         Effect: 'Allow',
@@ -117,8 +117,6 @@ const serverlessConfiguration: AWS = {
       }
 
 
-
-
     ],
 
     tracing: {
@@ -127,10 +125,11 @@ const serverlessConfiguration: AWS = {
     }
 
 
-    
+
   },
   // import the function via paths
   functions: { getGroups, createGroups, getImages, getAnImage, createImages, SendUploadNotifications, wss_connect, wss_disconnect, elasticSearchSync, resizeImage, auth0Authorizer, rs256Auth0Authorizer },
+
   resources: {
     Resources: {
       RequestBodyValidator: {
@@ -446,11 +445,6 @@ const serverlessConfiguration: AWS = {
           KmsKeyId: { Ref: 'KMSKey' }
         }
       }
-
-
-
-
-
 
 
 

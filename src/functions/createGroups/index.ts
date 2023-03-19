@@ -15,10 +15,20 @@ export default {
     },
   ],
 
-  deploymentSettings: {
-    type: 'Linear10PercentEvery1Minute',
-    alias: 'Live'
-  },
+  iamRoleStatements: [
+    {
+      Effect: "Allow",
+      Action: [
+        "dynamodb:PutItem",
+      ],
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GROUPS_TABLE}'
+    }
+  ],
+
+  // deploymentSettings: {
+  //   type: 'Linear10PercentEvery1Minute',
+  //   alias: 'Live'
+  // },
 
 
 

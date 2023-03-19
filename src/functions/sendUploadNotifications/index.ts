@@ -30,6 +30,18 @@ export default {
         "topicName": "${self:custom.topicName}"
       }
     }
+  ],
+
+  iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: [
+        'dynamodb:Scan',
+        'dynamodb:PutItem',
+        'dynamodb:DeleteItem'
+      ],
+      Resource: 'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}'
+    },
   ]
 
 };

@@ -2,18 +2,21 @@ import { middyfy } from '@libs/lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { getUserId } from 'src/auth/utils';
 import { v4 as uuidv4 } from 'uuid';
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { captureAWSv3Client } from "aws-xray-sdk";
 
-const TableName = process.env.GROUPS_TABLE || "udagram-dev";
+const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
+const docClient = new DynamoDBClient({ region: "us-east-1" });
+const TableName = process.env.GROUPS_TABLE || "udagram-dev"
 
-const xrayDynamoDBClient = captureAWSv3Client(new DynamoDBClient({ region: "us-east-1" }));
 
 const createGroups: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  // Your event is gotten from APIGateway. Its was sent to APIGateway either through POSTMAN or invoke by AWS lambda test.
+  // The content sent from either AWS Lambda test or postman varies
+  // postman sents `event: string` while lamda sends `event.body: object`
   console.log('Processing event:', event)
-
+  //
   const itemId = uuidv4()
-  const { name, description } = JSON.parse(event.body);
+  const { name, description } = JSON.parse(event.body); // this works for postman only
+  // const parsedBody = event // this works for lambda portal test
   const authorization = event.headers.Authorization
   const jwtToken = authorization.split(' ')[1]
 
@@ -22,18 +25,21 @@ const createGroups: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent)
     name: { S: name },
     description: { S: description },
     userId: { S: getUserId(jwtToken) },
-    timestamp: { S: new Date().toISOString() }
+    timestamp: {S: new Date().toISOString()}
   }
 
   const params = {
     TableName: TableName,
     Item: Item
   }
+  // console.log("Item", Item);
+
+
 
   try {
     console.log("params", params);
-
-    await xrayDynamoDBClient.send(new PutItemCommand(params));
+    
+    await docClient.send(new PutItemCommand(params));
     console.log('Item inserted successfully', params.Item);
 
     return {
@@ -49,7 +55,9 @@ const createGroups: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent)
       statusCode: 500,
       body: JSON.stringify({ error: `Unable to insert Item: ${error}` }),
     };
+
   }
+
 }
 
 export const main = middyfy(createGroups);
