@@ -29,9 +29,9 @@ const getAnImage: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): 
   })
 
   try {
-    console.log("QueryCommand", command);
     
     const result = await docClient.send(command);
+    console.log("QueryCommand result", result);
 
     if (result.Count !== 0) {
       return {
@@ -52,7 +52,7 @@ const getAnImage: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): 
     headers: {
       'Access-Control-Allow-Origin': '*'
     },
-    body: ''
+    body: 'Result was not returned or there was no result in DB'
   }
 }
 
